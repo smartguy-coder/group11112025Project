@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from apps.users.routers import users_router
 
 
-@app.get("/")
-def index():
-    return 89999990000
+def get_application() -> FastAPI:
+    _app = FastAPI()
+    _app.include_router(users_router, prefix='/users', tags=['Users'])
+    return _app
+
+
+app = get_application()

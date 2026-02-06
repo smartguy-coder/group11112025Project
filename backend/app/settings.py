@@ -10,8 +10,7 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return (f'postgresql+asyncpg://{self.PGUSER}:{self.PGPASSWORD}@{self.PGHOST}:{self.PGPORT}/{self.PGDATABASE}?'
-                f'sslmode=require&channel_binding=require')
+        return (f'postgresql+asyncpg://{self.PGUSER}:{self.PGPASSWORD}@{self.PGHOST}:{self.PGPORT}/{self.PGDATABASE}')
 
 
 class Settings(DatabaseSettings):

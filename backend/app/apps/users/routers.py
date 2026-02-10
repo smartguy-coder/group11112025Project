@@ -1,22 +1,13 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
-from apps.auth.password_handler import PasswordHandler
+from apps.core.dependencies import get_session
+from apps.users.crud import user_manager
 from apps.users.schemas import RegisterUserSchema, UserBaseFieldsSchema
 
 users_router = APIRouter()
 
 
 @users_router.post('/create', status_code=status.HTTP_201_CREATED)
-async def create_user(user_register_data: RegisterUserSchema) -> UserBaseFieldsSchema:
-    print(user_register_data.dict())
-    p_h = await PasswordHandler.get_password_hash(user_register_data.password)
-    print(p_h)
-
-    # true case
-    is_valid = await PasswordHandler.verify_password(user_register_data.password, p_h)
-    print(is_valid)
-    # false case
-    is_valid = await PasswordHandler.verify_password("user_register_data.password", p_h)
-    print(is_valid)
-
-    return user_register_data
+async def create_user(user_register_data: RegisterUserSchema, session=Depends(    get_session   )) -> UserBaseFieldsSchema:
+    user = await user_manager.create_user(session=session, user_register_data=user_register_data)
+    return user

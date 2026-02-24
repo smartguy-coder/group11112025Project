@@ -45,6 +45,12 @@ async def user_register(requests: Request, username: str = Form(""), email: str 
         if response.status_code == status.HTTP_201_CREATED:
             redirect_response = RedirectResponse(requests.url_for("index"), status_code=status.HTTP_303_SEE_OTHER)
             return redirect_response
+        elif response.status_code == status.HTTP_409_CONFLICT:
+            context['username'] = username
+            context['email'] = email
+            context['error'] = "Користувач з таким email вже існує"
+            response = templates.TemplateResponse('pages/sign-up.html', context=context)
+            return response
 
 
 

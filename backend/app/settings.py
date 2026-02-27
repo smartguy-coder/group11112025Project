@@ -13,7 +13,12 @@ class DatabaseSettings(BaseSettings):
         return (f'postgresql+asyncpg://{self.PGUSER}:{self.PGPASSWORD}@{self.PGHOST}:{self.PGPORT}/{self.PGDATABASE}')
 
 
-class Settings(DatabaseSettings):
+class JWT(BaseSettings):
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+
+
+class Settings(DatabaseSettings, JWT):
     DEBUG: bool = False
 
 

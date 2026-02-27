@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
+from apps.auth.auth_handler import auth_handler
 from apps.core.dependencies import get_session
 from apps.users.crud import user_manager, User
 from apps.auth.password_handler import PasswordHandler
@@ -28,3 +29,4 @@ async def user_login(
     if not is_password_valid:
         raise HTTPException(detail="incorrect password", status_code=status.HTTP_400_BAD_REQUEST)
 
+    return await auth_handler.get_access_token(user)

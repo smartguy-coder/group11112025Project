@@ -38,7 +38,10 @@ async def index(requests: Request, user: dict = Depends(get_user)):
 
 @router.get("/sign-up")
 @router.post("/sign-up")
-async def user_register(requests: Request, username: str = Form(""), email: str = Form(""), password: str = Form("")):
+async def user_register(requests: Request, user: dict = Depends(get_user), username: str = Form(""), email: str = Form(""), password: str = Form("")):
+    if user:
+        return RedirectResponse(requests.url_for("index"), status_code=status.HTTP_303_SEE_OTHER)
+
     context = {
         'request': requests
     }
@@ -83,10 +86,51 @@ async def user_register(requests: Request, username: str = Form(""), email: str 
             return response
 
 
+@router.get("/logout")
+async def logout(requests: Request):
+    redirect_response = RedirectResponse(requests.url_for("index"), status_code=status.HTTP_303_SEE_OTHER)
+    redirect_response.delete_cookie('access_token')
+    return redirect_response
 
 
+@router.get("/login")
+@router.post("/login")
+async def login(requests: Request, user: dict = Depends(get_user), email: str = Form(""), password: str = Form("")):
+    redirect_response = RedirectResponse(requests.url_for("index"), status_code=status.HTTP_303_SEE_OTHER)
+    if user:
+        return redirect_response
 
+    context = {
+        'request': requests,
+        "email": email
+    }
+    if requests.method == "GET":
+        response = templates.TemplateResponse('pages/login.html', context=context)
+        return response
 
+    async with httpx.AsyncClient() as client_login:
+        headers = {
+            'accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        json_data = {
+            'password': password,
+            'username': email,
+        }
+        response_login = await client_login.post('http://backend:8000/users/login', data=json_data, headers=headers)
+
+    if response_login.status_code == status.HTTP_404_NOT_FOUND:
+        context['error'] = "Користувач з таким email не знайдений"
+        response = templates.TemplateResponse('pages/login.html', context=context)
+        return response
+    if response_login.status_code == status.HTTP_400_BAD_REQUEST:
+        context['error'] = "перевірте введення паролю"
+        response = templates.TemplateResponse('pages/login.html', context=context)
+        return response
+
+    redirect_response.set_cookie('access_token', response_login.json()['access_token'], max_age=15 * 60)
+    return redirect_response
 
 
 
